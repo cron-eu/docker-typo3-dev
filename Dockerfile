@@ -20,3 +20,9 @@ RUN mv $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
 COPY php-typo3-config.ini $PHP_INI_DIR/conf.d/
 
 ENV TYPO3_CONTEXT Development
+
+# install java (headless). Needed by the tika indexer
+RUN apt-get update \
+  && mkdir -p /usr/share/man/man1 \
+  && apt-get install -y default-jre-headless \
+  && rm -rf /var/lib/apt/lists/*
