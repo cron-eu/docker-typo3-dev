@@ -4,8 +4,7 @@ TYPO3-dev Docker Image
 Abstract
 ----
 
-TYPO3 Development Docker Image. This will use the official php:apache image
-and configure it so TYPO3 runs fine.
+This is a TYPO3 Development Docker Image, based on the official [php:apache](https://hub.docker.com/_/php/) image.
 
 Limitations
 ----
