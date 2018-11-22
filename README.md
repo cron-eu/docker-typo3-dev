@@ -12,6 +12,12 @@ Limitations
 
 Currently only the TYPO3 Version 6.x is supported.
 
+Conventions
+----
+
+* `/var/www` is the data volume (shared by the web and ssh container)
+* Web-Root is `/var/www/app/src`
+
 Usage
 ----
 
@@ -31,8 +37,22 @@ services:
       - mysql:db
     environment:
       TYPO3_CONTEXT: Development
+  mysql:
+    image: mysql:5.5
+    environment: &dbenvironment
+      MYSQL_HOST: db
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: "my-secure-password-here"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
   ssh:
     image: remuslazar/typo3-dev-ssh:6
+    environment:
+      <<: *dbenvironment
+      IMPORT_GITHUB_PUB_KEYS: ${IMPORT_GITHUB_PUB_KEYS}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: eu-central-1
     volumes_from:
       - web
     ports:
@@ -40,34 +60,22 @@ services:
     links:
       - mysql:db
       - web:web
-  mysql:
-    image: mysql:5.5
-    environment:
-      MYSQL_DATABASE: intranet
-      MYSQL_USER: intranet
-      MYSQL_PASSWORD: "password"
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
 ```
 
-After `docker-compose up -d` access the volume inside the container, e.g using
+### configure.sh
 
 ```
-docker-compose exec web /bin/bash
+docker-compose exec ssh configure.sh
 ```
 
-### Configure SSH
+This will configure
 
-```
-chown www-data /var/www
-su - www-data
-mkdir .ssh
-echo "<your SSH pub key here" > .ssh/authorized_keys
-chmod 600 .ssh/authorized_keys
-exit
-exit
-```
+* SSH access will be configured for the GitHub User(s) configured in the
+`IMPORT_GITHUB_PUB_KEYS` env var (multiple users can be separated by ,).
+* AWS cli (using the AWS_* environment vars)
+* `/etc/my.cnf` for easy mysql access using e.g. the `mysql` cli.
 
-Then you can access the data volume using SSH:
+### SSH access
 
 ```
 ssh -A -p 1122 www-data@$(docker-machine ip $DOCKER_MACHINE_NAME)
