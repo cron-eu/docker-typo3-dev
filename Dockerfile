@@ -26,3 +26,8 @@ RUN apt-get update \
   && mkdir -p /usr/share/man/man1 \
   && apt-get install -y default-jre-headless \
   && rm -rf /var/lib/apt/lists/*
+
+# see https://github.com/docker-library/docs/blob/master/php/README.md#changing-documentroot
+ENV APACHE_DOCUMENT_ROOT /var/www/app/src/
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
